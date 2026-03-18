@@ -1,6 +1,6 @@
 name: Environmental Monitoring Analytics CI
 
-"on":
+on:
   push:
   pull_request:
 

@@ -110,11 +110,15 @@ def build_markdown_report(csv_path: Path | None = None) -> str:
 def build_html_report(csv_path: Path | None = None) -> str:
     summary = compute_summary(csv_path)
     max_alerts = max((alerts for _, alerts in summary["regional_alerts"]), default=1)
+
+    def bar_width(alerts: int) -> int:
+        return max(12, round((alerts / max_alerts) * 100))
+
     regional_cards = "\n".join(
         f"""
-        <div>
+        <div class="bar-group bar-width-{bar_width(alerts)}">
           <div class="bar-label"><span>{escape(region)}</span><strong>{alerts}</strong></div>
-          <div class="bar-track"><div class="bar-fill" style="width: {max(12, round((alerts / max_alerts) * 100))}%"></div></div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
         </div>
         """.strip()
         for region, alerts in summary["regional_alerts"]
@@ -142,6 +146,9 @@ def build_html_report(csv_path: Path | None = None) -> str:
       .bar-label {{ display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem; }}
       .bar-track {{ height: 12px; border-radius: 999px; background: rgba(73,97,109,0.12); overflow: hidden; }}
       .bar-fill {{ height: 100%; background: linear-gradient(90deg, #49616d, #d4a85f); }}
+      .bar-width-12 .bar-fill {{ width: 12%; }}
+      .bar-width-50 .bar-fill {{ width: 50%; }}
+      .bar-width-100 .bar-fill {{ width: 100%; }}
       .two-col {{ display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }}
       ul {{ margin: 0; padding-left: 18px; }}
       li {{ margin-bottom: 10px; }}
