@@ -61,7 +61,10 @@ environmental-monitoring-analytics/
 ```bash
 pip install -e .[dev]
 python -m environmental_monitoring_analytics.reporting
+python -m environmental_monitoring_analytics.reporting --input data/api_observation_snapshot.json
 ```
+
+The default command uses the checked-in CSV sample. The optional `--input` path also accepts an API-derived JSON snapshot bundle.
 
 ## Why It Is Useful In A Portfolio
 
@@ -78,15 +81,37 @@ python -m environmental_monitoring_analytics.reporting
 - Time-window trend analysis with recent vs previous alert-rate comparison
 - Latest alert stations section in markdown
 - Exportable HTML brief with visual summary blocks and regional alert bars
+- Support for API-derived JSON snapshot input in addition to the local CSV sample
 
 See [docs/sample-operations-brief.md](docs/sample-operations-brief.md) for a sample generated brief.
 See [docs/sample-operations-brief.html](docs/sample-operations-brief.html) for a sample generated HTML brief.
 See [docs/architecture.md](docs/architecture.md) for the reporting flow overview.
+See [docs/api-snapshot-contract.md](docs/api-snapshot-contract.md) for the snapshot input contract.
+
+## API Snapshot Workflow
+
+This project can consume a JSON bundle derived from the API lane as long as it contains feature metadata and observations in the documented snapshot shape.
+
+```powershell
+$bundle = @{
+	source = @{
+		project = 'spatial-data-api'
+		capturedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+	}
+	features = Invoke-RestMethod http://localhost:8000/api/v1/features
+	observations = Invoke-RestMethod "http://localhost:8000/api/v1/observations/recent?limit=50"
+}
+
+$bundle | ConvertTo-Json -Depth 8 | Set-Content data/api_observation_snapshot.json
+python -m environmental_monitoring_analytics.reporting --input data/api_observation_snapshot.json
+```
+
+The included [data/api_observation_snapshot.json](data/api_observation_snapshot.json) file is a checked-in example of that bundle shape.
 
 ## Next Steps
 
-- Connect the analytics dataset to the API project as a downstream consumer
 - Add parameterized report windows for longer operational comparisons
+- Add support for larger exported snapshots and batch comparisons
 
 ## Publication
 

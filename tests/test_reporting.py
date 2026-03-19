@@ -1,4 +1,10 @@
+from pathlib import Path
+
 from environmental_monitoring_analytics.reporting import build_html_report, build_markdown_report, compute_summary, export_reports
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+API_SNAPSHOT_PATH = PROJECT_ROOT / "data" / "api_observation_snapshot.json"
 
 
 def test_compute_summary() -> None:
@@ -37,3 +43,23 @@ def test_export_reports(tmp_path) -> None:
     assert outputs["markdown"].exists()
     assert outputs["html"].exists()
     assert "Monitoring Operations Brief" in outputs["html"].read_text(encoding="utf-8")
+
+
+def test_compute_summary_from_api_snapshot() -> None:
+    summary = compute_summary(API_SNAPSHOT_PATH)
+    assert summary["total_observations"] == 6
+    assert summary["alert_observations"] == 2
+    assert summary["alert_rate"] == 0.3333
+    assert summary["regional_alerts"] == [("West", 2)]
+    assert summary["time_window_trends"]["direction"] == "worsening"
+
+
+def test_report_generation_from_api_snapshot(tmp_path) -> None:
+    report = build_markdown_report(API_SNAPSHOT_PATH)
+    assert "Sierra Air Quality Node" in report
+    assert "Alert observations: 2" in report
+
+    outputs = export_reports(output_dir=tmp_path, data_path=API_SNAPSHOT_PATH)
+    assert outputs["markdown"].exists()
+    assert outputs["html"].exists()
+    assert "Sierra Air Quality Node" in outputs["html"].read_text(encoding="utf-8")
