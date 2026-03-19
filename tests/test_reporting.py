@@ -8,12 +8,18 @@ def test_compute_summary() -> None:
     assert summary["alert_rate"] == 0.5714
     assert summary["regional_alerts"][0][0] == "West"
     assert summary["regional_alerts"][0][1] == 2
+    assert summary["time_window_trends"]["window_hours"] == 2
+    assert summary["time_window_trends"]["recent"]["alert_observations"] == 3
+    assert summary["time_window_trends"]["previous"]["alert_observations"] == 1
+    assert summary["time_window_trends"]["direction"] == "improving"
 
 
 def test_markdown_report() -> None:
     report = build_markdown_report()
     assert "# Monitoring Operations Brief" in report
     assert "Alert observations: 4" in report
+    assert "## Trend Window" in report
+    assert "Alert-rate direction: improving" in report
     assert "Sierra Air Quality Node" in report
 
 
@@ -21,6 +27,8 @@ def test_html_report() -> None:
     report = build_html_report()
     assert "<title>Monitoring Operations Brief</title>" in report
     assert "Regional Alert Load" in report
+    assert "Regional Trend Shift" in report
+    assert "trend-badge" in report
     assert "Sierra Air Quality Node" in report
 
 
