@@ -1,4 +1,4 @@
-name: Environmental Monitoring Analytics CI
+name: CI
 
 on:
   push:
